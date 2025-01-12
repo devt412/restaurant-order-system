@@ -124,6 +124,7 @@ export default function DashboardPage() {
                     dataSource={orders}
                     rowKey="id"
                     pagination={false}
+                    virtual={true}
                 />
             </Card>
         </div>
