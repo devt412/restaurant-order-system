@@ -4,6 +4,7 @@ from app.schemas.order import OrderCreate, OrderUpdate, OrderResponse
 from app.services.order import OrderService
 from app.websocket.connection_manager import manager
 from fastapi import WebSocket
+from fastapi.websockets import WebSocketDisconnect
 from app.core.json_utils import DateTimeEncoder
 
 router = APIRouter()
@@ -20,18 +21,37 @@ async def websocket_endpoint(
 ):
     await manager.connect(websocket)
     try:
+        # Send initial data
+        orders = order_service.get_all_orders()
+        await websocket.send_json(
+            {"type": "initial_data", "data": [order.to_dict() for order in orders]}
+        )
+
+        # Keep connection alive and handle incoming messages
         while True:
-            data = await websocket.receive_text()
-            # Handle received data if needed
-            await websocket.send_json({"status": "received"})
-    except:
+            try:
+                text = await websocket.receive_text()
+                # Echo back the message as status received
+                await websocket.send_json({"status": "received"})
+            except WebSocketDisconnect:
+                break
+            except Exception as e:
+                print(f"Error handling WebSocket message: {e}")
+                break
+    finally:
         manager.disconnect(websocket)
 
 
 @router.post("/", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(order: OrderCreate):
     new_order = order_service.create_order(order)
-    await manager.broadcast({"type": "new_order", "data": new_order.to_dict()})
+    try:
+        await manager.broadcast({
+            "type": "new_order",
+            "data": new_order.to_dict()
+        })
+    except Exception as e:
+        print(f"Error broadcasting new order: {e}")
     return new_order.to_dict()
 
 
@@ -57,7 +77,13 @@ async def update_order(order_id: str, order_update: OrderUpdate):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Order not found"
         )
-    await manager.broadcast({"type": "order_updated", "data": updated_order.to_dict()})
+    try:
+        await manager.broadcast({
+            "type": "order_updated",
+            "data": updated_order.to_dict()
+        })
+    except Exception as e:
+        print(f"Error broadcasting order update: {e}")
     return updated_order
 
 
