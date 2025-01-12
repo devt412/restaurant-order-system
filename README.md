@@ -28,7 +28,7 @@ A full-stack application for managing restaurant orders, built with Next.js and 
 ### Backend Setup
 ```bash
 # Clone repository
-git clone <repository-url>
+git clone https://github.com/devt412/restaurant-order-system
 cd backend
 
 # Create and activate virtual environment
