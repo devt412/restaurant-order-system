@@ -60,7 +60,9 @@ yarn dev
 ```
 
 The application will be available at:
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:3000 
+   - Dashboard (/dashboard)
+   - Order (/order)
 - Backend API: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
 
