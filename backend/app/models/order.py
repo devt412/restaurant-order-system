@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
-from ..schemas.order import OrderStatus
+from app.schemas.order import OrderStatus
 
 
 class Order:
@@ -27,6 +27,6 @@ class Order:
             "quantity": self.quantity,
             "status": self.status,
             "special_instructions": self.special_instructions,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
